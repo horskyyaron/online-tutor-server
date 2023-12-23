@@ -29,9 +29,9 @@ io.on("connection", (socket) => {
 
     socket.data.role = getNumOfConnClients() === 1 ? "Student" : "Tutor";
     if (socket.data.role === "Student") {
-        io.emit("handshake", { role: "student" });
+        socket.emit("handshake", { role: "student" });
     } else {
-        io.emit("handshake", { role: "tutor" });
+        socket.emit("handshake", { role: "tutor" });
     }
 
     socket.on("disconnect", () => {
