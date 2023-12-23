@@ -16,6 +16,10 @@ function getNumOfConnClients() {
   return io.sockets.sockets.size;
 }
 
+app.get("/", (req,res) => {
+    res.send("hello world")
+});
+
 function listAllClients() {
   io.sockets.sockets.forEach((socket) => {
     const clientId = socket.id;
