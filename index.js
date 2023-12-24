@@ -16,8 +16,8 @@ function getNumOfConnClients() {
   return io.sockets.sockets.size;
 }
 
-app.get("/", (req,res) => {
-    res.send("hello world")
+app.get("/", (req, res) => {
+  res.send("hello world");
 });
 
 function listAllClients() {
@@ -31,11 +31,10 @@ function listAllClients() {
 io.on("connection", (socket) => {
   console.log(`new connection! ${socket.id}`);
 
-  const role = getNumOfConnClients() === 1 ? "student" : "tutor";
-  if (role === "student") {
-    socket.emit("handshake", { role: "student" });
-  } else {
+  if (getNumOfConnClients() == 1) {
     socket.emit("handshake", { role: "tutor" });
+  } else {
+    socket.emit("handshake", { role: "student" });
   }
 
   socket.on("text change", (text) => {
