@@ -8,8 +8,11 @@ app.use(cors());
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://horskyyaron.com",
-    methods: ["GET", "POST"],
+    origin:
+      process.env.NODE_ENV == "production"
+        ? process.env.ORIGIN
+        : "http://localhost:*",
+    // methods: ["GET", "POST"],
   },
 });
 
@@ -40,7 +43,6 @@ io.on("connection", (socket) => {
 
   socket.on("text change", (text) => {
     socket.broadcast.emit("text change", { updatedText: text });
-    console.log(text);
   });
 
   socket.on("disconnect", () => {
@@ -48,6 +50,16 @@ io.on("connection", (socket) => {
   });
 });
 
+const env = process.env.NODE_ENV;
+
 server.listen(4000, () => {
-  console.log("server running at http://localhost:4000");
+  if (env == "production") {
+    console.log(
+      "server running at production mode, origin: https://horskyyaron.com",
+    );
+  } else {
+    console.log(
+      "server running at development mode, origin: http://localhost:*",
+    );
+  }
 });
