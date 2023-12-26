@@ -12,23 +12,22 @@ const io = new Server(server, {
       process.env.NODE_ENV == "production"
         ? process.env.ORIGIN
         : "http://localhost:*",
-    // methods: ["GET", "POST"],
   },
 });
 
-function getNumOfConnClients() {
-  return io.sockets.sockets.size;
-}
+const session = {
+  tutorSocketId: "",
+  studentSocketId: "",
+  challenge_id: "",
+};
 
 app.get("/", (req, res) => {
   res.send("hello world");
 });
 
-const manager = {
-  tutorSocketId: "",
-  studentSocketId: "",
-  challenge_id: "",
-};
+app.get("/status", (req, res) => {
+  res.send({ session: session });
+});
 
 io.on("connection", (socket) => {
   console.log(`new connection! ${socket.id}`);
@@ -36,23 +35,23 @@ io.on("connection", (socket) => {
   // tracks tutror/studnet with the manager object.
   if (io.engine.clientsCount == 1) {
     socket.emit("handshake", { role: "tutor" });
-    manager.tutorSocketId = socket.id;
-    console.log(manager);
+    session.tutorSocketId = socket.id;
+    console.log(session);
   } else {
-    if (manager.tutorSocketId) {
+    if (session.tutorSocketId) {
       socket.emit("handshake", { role: "student" });
-      manager.studentSocketId = socket.id;
-      console.log("student connected", manager);
+      session.studentSocketId = socket.id;
+      console.log("student connected", session);
     } else {
       // student is connected but tutor got disconnected. reconnect tutor.
       socket.emit("handshake", { role: "tutor" });
-      manager.tutorSocketId = socket.id;
-      console.log(manager);
+      session.tutorSocketId = socket.id;
+      console.log(session);
     }
   }
 
   socket.on("challenge", (challenge_id) => {
-    manager.challenge_id = challenge_id;
+    session.challenge_id = challenge_id;
   });
 
   socket.on("text change", (text) => {
@@ -60,13 +59,13 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    if (manager.studentSocketId == socket.id) {
-      manager.studentSocketId = "";
+    if (session.studentSocketId == socket.id) {
+      session.studentSocketId = "";
     } else {
-      manager.tutorSocketId = "";
+      session.tutorSocketId = "";
     }
     console.log(`socket: ${socket.id} disconnected!`);
-    console.log(manager);
+    console.log(session);
   });
 });
 
