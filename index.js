@@ -24,11 +24,10 @@ app.get("/", (req, res) => {
   res.send("hello world");
 });
 
-
 const manager = {
   tutorSocketId: "",
   studentSocketId: "",
-  room: "",
+  challenge_id: "",
 };
 
 io.on("connection", (socket) => {
@@ -52,8 +51,8 @@ io.on("connection", (socket) => {
     }
   }
 
-  socket.on("room", (room) => {
-    manager.room = room;
+  socket.on("challenge", (challenge_id) => {
+    manager.challenge_id = challenge_id;
   });
 
   socket.on("text change", (text) => {
