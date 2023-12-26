@@ -26,6 +26,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/status", (req, res) => {
+  console.log(session);
   res.send({ session: session });
 });
 
