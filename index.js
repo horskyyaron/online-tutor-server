@@ -31,6 +31,7 @@ app.get("/status", (req, res) => {
 
 io.on("connection", (socket) => {
   console.log(`new connection! ${socket.id}`);
+  cleanup();
 
   // tracks tutror/studnet with the manager object.
   if (io.engine.clientsCount == 1) {
@@ -52,6 +53,7 @@ io.on("connection", (socket) => {
 
   socket.on("challenge", (challenge_id) => {
     session.challenge_id = challenge_id;
+    console.log(session);
   });
 
   socket.on("text change", (text) => {
@@ -65,9 +67,20 @@ io.on("connection", (socket) => {
       session.tutorSocketId = "";
     }
     console.log(`socket: ${socket.id} disconnected!`);
+    cleanup();
     console.log(session);
   });
 });
+
+function cleanup() {
+  if (
+    session.challenge_id != "" &&
+    session.tutorSocketId == "" &&
+    session.studentSocketId == ""
+  ) {
+    session.challenge_id = "";
+  }
+}
 
 const env = process.env.NODE_ENV;
 
