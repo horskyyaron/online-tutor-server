@@ -24,29 +24,50 @@ app.get("/", (req, res) => {
   res.send("hello world");
 });
 
-function listAllClients() {
-  io.sockets.sockets.forEach((socket) => {
-    const clientId = socket.id;
-    const clientIP = socket.handshake.address;
-    console.log(`Client ID: ${clientId}, IP: ${clientIP}`);
-  });
-}
+
+const manager = {
+  tutorSocketId: "",
+  studentSocketId: "",
+  room: "",
+};
 
 io.on("connection", (socket) => {
   console.log(`new connection! ${socket.id}`);
 
-  if (getNumOfConnClients() == 1) {
+  // tracks tutror/studnet with the manager object.
+  if (io.engine.clientsCount == 1) {
     socket.emit("handshake", { role: "tutor" });
+    manager.tutorSocketId = socket.id;
+    console.log(manager);
   } else {
-    socket.emit("handshake", { role: "student" });
+    if (manager.tutorSocketId) {
+      socket.emit("handshake", { role: "student" });
+      manager.studentSocketId = socket.id;
+      console.log("student connected", manager);
+    } else {
+      // student is connected but tutor got disconnected. reconnect tutor.
+      socket.emit("handshake", { role: "tutor" });
+      manager.tutorSocketId = socket.id;
+      console.log(manager);
+    }
   }
+
+  socket.on("room", (room) => {
+    manager.room = room;
+  });
 
   socket.on("text change", (text) => {
     socket.broadcast.emit("text change", { updatedText: text });
   });
 
   socket.on("disconnect", () => {
-    console.log("client disconnected");
+    if (manager.studentSocketId == socket.id) {
+      manager.studentSocketId = "";
+    } else {
+      manager.tutorSocketId = "";
+    }
+    console.log(`socket: ${socket.id} disconnected!`);
+    console.log(manager);
   });
 });
 
